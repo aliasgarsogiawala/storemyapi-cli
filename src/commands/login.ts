@@ -32,7 +32,7 @@ export async function login() {
           email: user.email,
         });
 
-        console.log("✅ Logged in successfully!");
+        console.log("✅ Logged in successfully!!");
         authenticated = true;
       }
     }
