@@ -38,14 +38,12 @@ export async function login() {
 
         // the token endpoint should respond with the same shape we were
         // previously getting in the status response
-        const { accessToken, refreshToken, user } = tokenRes.data;
+        const { token } = tokenRes.data;
 
-        saveConfig({
-          accessToken,
-          refreshToken,
-          userId: user.id,
-          email: user.email,
-        });
+saveConfig({
+  accessToken: token,
+  userId: statusRes.data.userId,
+});
 
         console.log("✅ Logged in successfully!!");
         authenticated = true;
