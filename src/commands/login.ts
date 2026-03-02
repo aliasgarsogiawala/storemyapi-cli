@@ -1,3 +1,4 @@
+import axios from "axios";
 import { api } from "../utils/api";
 import { saveConfig } from "../utils/config";
 import open from "open";
@@ -23,7 +24,21 @@ export async function login() {
       const statusRes = await api.get(`/cli/status?code=${deviceCode}`);
 
       if (statusRes.data.verified) {
-        const { accessToken, refreshToken, user } = statusRes.data;
+        // userId comes back from the status poll, now exchange it for tokens
+        console.log("Verified user:", statusRes.data.userId);
+
+        const tokenRes = await axios.post(
+          "https://storemyapi.dev/api/cli/token",
+          {
+            userId: statusRes.data.userId,
+          }
+        );
+
+        console.log("Token received:", tokenRes.data);
+
+        // the token endpoint should respond with the same shape we were
+        // previously getting in the status response
+        const { accessToken, refreshToken, user } = tokenRes.data;
 
         saveConfig({
           accessToken,
