@@ -21,7 +21,7 @@ export async function login() {
     while (!authenticated) {
       await new Promise((res) => setTimeout(res, 3000));
 
-      const statusRes = await api.get(`/cli/status?code=${deviceCode}`);
+      const statusRes = await api.get(`/cli/poll?code=${deviceCode}`);
 
       if (statusRes.data.verified) {
         // userId comes back from the status poll, now exchange it for tokens
