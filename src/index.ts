@@ -10,7 +10,7 @@ const program = new Command();
 program
   .name("storemyapi")
   .description("Secure cloud-synced .env manager")
-  .version("1.0.1");
+  .version("1.0.3");
 
 program
   .command("login")

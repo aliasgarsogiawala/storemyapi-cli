@@ -34,7 +34,14 @@ async function login() {
                     accessToken: token,
                     userId: statusRes.data.userId,
                 });
-                console.log("✅ Logged in successfully!!");
+                // Display centered success message
+                console.log("\n");
+                console.log("╔════════════════════════════════════════╗");
+                console.log("║   ✅ CLI Authentication                ║");
+                console.log("║   CLI authenticated successfully.      ║");
+                console.log("║   You can now close this window.       ║");
+                console.log("╚════════════════════════════════════════╝");
+                console.log("\n");
                 authenticated = true;
             }
         }

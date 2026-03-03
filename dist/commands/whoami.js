@@ -20,7 +20,7 @@ async function whoami() {
             },
         });
         console.log("👤 Logged in as:");
-        console.log("User ID:", res.data.userId);
+        console.log("User:", res.data.email);
     }
     catch (err) {
         console.log("❌ Session invalid or expired.");

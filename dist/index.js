@@ -8,7 +8,7 @@ const program = new commander_1.Command();
 program
     .name("storemyapi")
     .description("Secure cloud-synced .env manager")
-    .version("1.0.1");
+    .version("1.0.3");
 program
     .command("login")
     .description("Login via browser")
