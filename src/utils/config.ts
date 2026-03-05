@@ -16,3 +16,11 @@ export function getConfig() {
   if (!fs.existsSync(configPath)) return null;
   return JSON.parse(fs.readFileSync(configPath, "utf-8"));
 }
+
+export function clearConfig() {
+  if (fs.existsSync(configPath)) fs.unlinkSync(configPath);
+
+  if (fs.existsSync(configDir) && fs.readdirSync(configDir).length === 0) {
+    fs.rmdirSync(configDir);
+  }
+}

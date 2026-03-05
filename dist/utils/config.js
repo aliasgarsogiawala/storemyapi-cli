@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.saveConfig = saveConfig;
 exports.getConfig = getConfig;
+exports.clearConfig = clearConfig;
 const fs_1 = __importDefault(require("fs"));
 const os_1 = __importDefault(require("os"));
 const path_1 = __importDefault(require("path"));
@@ -20,4 +21,11 @@ function getConfig() {
     if (!fs_1.default.existsSync(configPath))
         return null;
     return JSON.parse(fs_1.default.readFileSync(configPath, "utf-8"));
+}
+function clearConfig() {
+    if (fs_1.default.existsSync(configPath))
+        fs_1.default.unlinkSync(configPath);
+    if (fs_1.default.existsSync(configDir) && fs_1.default.readdirSync(configDir).length === 0) {
+        fs_1.default.rmdirSync(configDir);
+    }
 }

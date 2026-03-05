@@ -3,6 +3,7 @@
 import { Command } from "commander";
 import { login } from "./commands/login";
 import { whoami } from "./commands/whoami";
+import { logout } from "./commands/logout";
 
 
 const program = new Command();
@@ -21,4 +22,10 @@ program
   .command("whoami")
   .description("Show current logged in user")
   .action(whoami);
+
+program
+  .command("logout")
+  .description("Logout from storemyapi")
+  .action(logout);
+
 program.parse();

@@ -2,7 +2,7 @@
 
 A secure, cloud-synced environment variable manager for your development workflow.
 
-**Version:** 1.0.3
+**Version:** 1.0.4
 
 ## Overview
 
@@ -13,6 +13,7 @@ StoreMyAPI CLI is a command-line tool that provides seamless management of envir
 - **Secure Browser-Based Authentication** - OAuth-style device flow authentication
 - **Cloud-Synced Environment Variables** - Store and retrieve your `.env` files securely
 - **Cross-Device Access** - Access your configuration from any machine
+- **Session Management** - Track and logout of active sessions
 - **Zero-Config Setup** - Minimal configuration required
 - **Type-Safe** - Built with TypeScript for reliability
 
@@ -53,6 +54,16 @@ storemyapi whoami
 
 Returns the email address associated with your authenticated account.
 
+### 3. Logout
+
+End your current session:
+
+```bash
+storemyapi logout
+```
+
+Clears your local authentication token and displays session duration.
+
 ## Commands
 
 ### `login`
@@ -90,6 +101,28 @@ User: your-email@example.com
 **Error Cases:**
 - Returns "not logged in" message if no authentication token exists
 - Returns "session invalid" if token has expired
+
+### `logout`
+
+Logs out the current user and clears stored authentication token.
+
+```bash
+storemyapi logout
+```
+
+**What it does:**
+- Removes local authentication token
+- Displays session duration if available
+- Cleans up configuration directory
+
+**Output:**
+```
+✅ Logged out successfully.
+Session duration: 2h 15m
+```
+
+**Error Cases:**
+- Returns "not logged in" message if no active session exists
 
 ## Configuration
 
@@ -207,6 +240,7 @@ storemyapi-cli/
 │   ├── index.ts           # CLI entry point
 │   ├── commands/
 │   │   ├── login.ts       # Login command handler
+│   │   ├── logout.ts      # Logout command handler
 │   │   └── whoami.ts      # Whoami command handler
 │   └── utils/
 │       ├── api.ts         # API client configuration
@@ -221,6 +255,7 @@ storemyapi-cli/
 - **commander** ^14.0.3 - Command-line interface framework
 - **axios** ^1.13.6 - HTTP client for API requests
 - **open** ^11.0.0 - Opens URLs in default browser
+- **jwt-decode** ^4.0.0 - JWT token decoding for session tracking
 
 ## License
 
@@ -231,6 +266,13 @@ ISC
 For issues, feature requests, or contributions, please contact support or visit the project repository.
 
 ## Changelog
+
+### Version 1.0.4
+
+- Added `logout` command for session management
+- Session duration tracking and display
+- Improved configuration cleanup on logout
+- Added jwt-decode dependency for token parsing
 
 ### Version 1.0.3
 

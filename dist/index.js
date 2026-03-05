@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const commander_1 = require("commander");
 const login_1 = require("./commands/login");
 const whoami_1 = require("./commands/whoami");
+const logout_1 = require("./commands/logout");
 const program = new commander_1.Command();
 program
     .name("storemyapi")
@@ -17,4 +18,8 @@ program
     .command("whoami")
     .description("Show current logged in user")
     .action(whoami_1.whoami);
+program
+    .command("logout")
+    .description("Logout from storemyapi")
+    .action(logout_1.logout);
 program.parse();
