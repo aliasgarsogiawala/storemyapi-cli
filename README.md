@@ -2,20 +2,20 @@
 
 A secure, cloud-synced environment variable manager for your development workflow.
 
-**Version:** 1.0.4
+**Version:** 1.0.5
 
 ## Overview
 
-StoreMyAPI CLI is a command-line tool that provides seamless management of environment variables across your development environment. Authenticate securely via browser and store your `.env` configuration in the cloud with confidence.
+StoreMyAPI CLI is a command-line tool that provides seamless management of environment variables across your development environment. Authenticate securely via browser and manage your projects with confidence.
 
 ## Features
 
 - **Secure Browser-Based Authentication** - OAuth-style device flow authentication
-- **Cloud-Synced Environment Variables** - Store and retrieve your `.env` files securely
-- **Cross-Device Access** - Access your configuration from any machine
+- **Project Management** - Initialize and manage projects locally
+- **Cloud-Synced Configuration** - Store your project configuration securely
 - **Session Management** - Track and logout of active sessions
+- **Cross-Device Access** - Access your configuration from any machine
 - **Zero-Config Setup** - Minimal configuration required
-- **Type-Safe** - Built with TypeScript for reliability
 
 ## Installation
 
@@ -31,7 +31,7 @@ npm install --save-dev storemyapi
 
 ## Quick Start
 
-### 1. Authenticate
+### 1. Login
 
 Start the authentication flow:
 
@@ -39,30 +39,37 @@ Start the authentication flow:
 storemyapi login
 ```
 
-This will:
-- Open your default browser for authentication
-- Display a verification URL if browser fails to open
-- Store your access token locally after successful authentication
+This will open your browser for authentication and store your access token locally.
 
-### 2. Verify Authentication
+### 2. Initialize a Project
 
-Check your current authentication status:
+Set up a project in your current directory:
+
+```bash
+storemyapi init
+```
+
+You'll be prompted for:
+- **Project name** (defaults to current folder name)
+- **Description** (optional)
+
+Creates a `.storemyapi.json` file linking your local folder to the project.
+
+### 3. Verify Authentication
+
+Check your current logged-in user:
 
 ```bash
 storemyapi whoami
 ```
 
-Returns the email address associated with your authenticated account.
+### 4. Logout
 
-### 3. Logout
-
-End your current session:
+End your session:
 
 ```bash
 storemyapi logout
 ```
-
-Clears your local authentication token and displays session duration.
 
 ## Commands
 
@@ -71,18 +78,17 @@ Clears your local authentication token and displays session duration.
 Initiates CLI authentication via browser.
 
 ```bash
-storemyapi login
+storemyapi login [options]
 ```
 
-**What it does:**
-- Generates a device code for verification
-- Opens your browser to the authentication page
-- Polls for verification status
-- Stores access token upon successful authentication
+**Options:**
+- `--no-browser` - Display authentication URL instead of opening browser automatically
 
-**Requirements:**
-- Default browser available on your system
-- Active internet connection
+**Output:**
+```
+Opening browser for authentication...
+Login successful!
+```
 
 ### `whoami`
 
@@ -94,199 +100,149 @@ storemyapi whoami
 
 **Output:**
 ```
-👤 Logged in as:
-User: your-email@example.com
+Logged in as: your-email@example.com
 ```
-
-**Error Cases:**
-- Returns "not logged in" message if no authentication token exists
-- Returns "session invalid" if token has expired
 
 ### `logout`
 
-Logs out the current user and clears stored authentication token.
+Logs out and clears your local authentication token.
 
 ```bash
 storemyapi logout
 ```
 
-**What it does:**
-- Removes local authentication token
-- Displays session duration if available
-- Cleans up configuration directory
-
 **Output:**
 ```
-✅ Logged out successfully.
+Logged out successfully.
 Session duration: 2h 15m
 ```
 
-**Error Cases:**
-- Returns "not logged in" message if no active session exists
+### `init`
 
-## Configuration
+Initializes a StoreMyAPI project in your current folder.
 
-Your authentication token is stored locally in:
-
-```
-~/.storemyapi/config.json
+```bash
+storemyapi init
 ```
 
-This file contains:
-- `accessToken` - Bearer token for API requests
-- `userId` - Your unique user identifier
+**Prompts:**
+- Project name (required)
+- Description (optional)
 
-**Security Note:** This file contains sensitive authentication data. Do not share or commit this file to version control. Add it to your `.gitignore`.
+**Creates:**
+- `.storemyapi.json` - Local project configuration
 
-## Authentication Flow
+**Output:**
+```
+Initialized!
+Project created: my-project
+Linked locally via .storemyapi.json
+```
 
-StoreMyAPI CLI uses a device code authentication flow:
+## Configuration Files
 
-1. CLI requests device code from StoreMyAPI API
-2. Browser opens with verification URL
-3. User authenticates in browser
-4. CLI polls for verification status every 3 seconds
-5. Upon verification, CLI exchanges device code for access token
-6. Token is stored locally for future API requests
+### `.storemyapi/config.json`
 
-## Error Handling
+Located in your home directory (`~/.storemyapi/config.json`). Contains:
+- `accessToken` - Your authentication token
+- `userId` - Your user identifier
 
-### Authentication Errors
+**Security:** Never share or commit this file. Add `~/.storemyapi/` to your `.gitignore`.
 
-**"You are not logged in"**
-- Run `storemyapi login` to authenticate
+### `.storemyapi.json`
 
-**"Session invalid or expired"**
-- Your token has expired
-- Run `storemyapi login` to re-authenticate
+Located in your project folder. Contains:
+- `projectId` - Your project's unique identifier
+- `projectName` - Project name
+- `createdAt` - Project creation timestamp
 
-**"Login failed"**
-- Check your internet connection
-- Verify the authentication URL loaded in your browser
-- Try the login process again
+Safe to commit to version control.
 
 ## System Requirements
 
 - Node.js 18.0 or higher
 - macOS, Linux, or Windows
-- Default web browser for authentication
-
-## API Reference
-
-The CLI communicates with the StoreMyAPI backend at `https://storemyapi.dev/api`
-
-### Endpoints Used
-
-- `POST /cli/start` - Initiate device code flow
-- `GET /cli/poll?code={deviceCode}` - Poll for verification status
-- `POST /cli/token` - Exchange device code for access token
-- `GET /cli/me` - Get authenticated user information
+- Default web browser (for authentication)
 
 ## Troubleshooting
 
+### "You are not logged in"
+
+Run the login command:
+```bash
+storemyapi login
+```
+
 ### Browser doesn't open automatically
 
-The CLI will display the authentication URL in the terminal. Copy and paste it into your browser manually.
+Use the `--no-browser` flag and manually visit the displayed URL:
+```bash
+storemyapi login --no-browser
+```
 
-### Authentication hangs
+### "Project already initialized"
 
-Ensure your internet connection is stable. The CLI polls every 3 seconds and will timeout after multiple failed attempts.
+A `.storemyapi.json` file already exists in this folder. Remove it if you want to reinitialize:
+```bash
+rm .storemyapi.json
+storemyapi init
+```
 
 ### Command not found
 
-If you installed globally, ensure npm's global bin directory is in your PATH:
-
+If installed globally, ensure npm's bin directory is in your PATH:
 ```bash
 npm config get prefix
 ```
 
-Add the returned path's `bin` directory to your PATH environment variable.
-
-## Development
-
-### Prerequisites
-
-- Node.js 18+
-- npm 9+
-- TypeScript 5+
-
-### Setup
-
-```bash
-git clone <repository>
-cd storemyapi-cli
-npm install
-```
-
-### Build
-
-```bash
-npm run build
-```
-
-Compiles TypeScript to JavaScript in the `dist/` directory.
-
-### Test
-
-```bash
-npm test
-```
+Add the returned path's `bin` directory to your system PATH.
 
 ## Project Structure
 
 ```
 storemyapi-cli/
 ├── src/
-│   ├── index.ts           # CLI entry point
+│   ├── index.ts              # CLI entry point
 │   ├── commands/
-│   │   ├── login.ts       # Login command handler
-│   │   ├── logout.ts      # Logout command handler
-│   │   └── whoami.ts      # Whoami command handler
+│   │   ├── login.ts          # Authentication handler
+│   │   ├── logout.ts         # Session termination
+│   │   ├── whoami.ts         # User info display
+│   │   └── init.ts           # Project initialization
 │   └── utils/
-│       ├── api.ts         # API client configuration
-│       └── config.ts      # Configuration file management
-├── dist/                  # Compiled JavaScript
-├── tsconfig.json          # TypeScript configuration
-└── package.json           # Project metadata and dependencies
+│       ├── api.ts            # API client
+│       └── config.ts         # Config file management
+├── dist/                     # Compiled output
+├── tsconfig.json
+└── package.json
 ```
 
 ## Dependencies
 
-- **commander** ^14.0.3 - Command-line interface framework
-- **axios** ^1.13.6 - HTTP client for API requests
-- **open** ^11.0.0 - Opens URLs in default browser
-- **jwt-decode** ^4.0.0 - JWT token decoding for session tracking
-
-## License
-
-ISC
-
-## Support
-
-For issues, feature requests, or contributions, please contact support or visit the project repository.
+- **commander** ^14.0.3 - CLI framework
+- **axios** ^1.13.6 - HTTP client
+- **inquirer** ^9.0.0 - Interactive prompts
+- **open** ^11.0.0 - Open URLs in browser
+- **jwt-decode** ^4.0.0 - Token parsing
 
 ## Changelog
 
+### Version 1.0.5
+
+- Enhanced `init` command with project description support
+- Improved error logging and diagnostics
+- Better terminal output formatting
+- Updated documentation
+
 ### Version 1.0.4
 
-- Added `logout` command for session management
-- Session duration tracking and display
-- Improved configuration cleanup on logout
-- Added jwt-decode dependency for token parsing
+- Added `logout` command with session tracking
+- Improved configuration cleanup
 
 ### Version 1.0.3
 
-- Improved authentication success page formatting
-- Enhanced error messages for better user guidance
-- Refined terminal output for professional presentation
-- Updated documentation and README
-
-### Version 1.0.1
-
-- Initial stable release
-- Core authentication flow
-- Basic user verification
+- Enhanced authentication UI
+- Better error messages
 
 ---
 
-**Built with TypeScript • Powered by Node.js**
+**Built with TypeScript • Node.js CLI**

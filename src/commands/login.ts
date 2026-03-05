@@ -1,62 +1,72 @@
-import axios from "axios";
+import open from "open";
 import { api } from "../utils/api";
 import { saveConfig } from "../utils/config";
-import open from "open";
 
-export async function login() {
+type LoginOptions = {
+  browser?: boolean; 
+};
+
+export async function login(opts: LoginOptions = {}) {
   try {
     console.log("Starting CLI authentication...");
 
+    
     const { data } = await api.post("/cli/start");
 
-    const { deviceCode, verificationUrl } = data;
+    const {
+      deviceCode,
+      userCode,
+      verificationUrl,           
+      verificationUrlNoBrowser,  
+    } = data;
 
-    console.log("Opening browser to authenticate...");
-    await open(verificationUrl);
+    if (opts.browser === false) {
+      console.log(`
+🔐 Authentication required
 
-    console.log("Waiting for verification...");
+1. Open this URL:
+   ${verificationUrlNoBrowser}
 
-    let authenticated = false;
+2. Enter this code:
+   ${userCode}
 
-    while (!authenticated) {
+Waiting for confirmation...
+`);
+    } else {
+      console.log("Opening browser to authenticate...");
+      await open(verificationUrl);
+      console.log("Waiting for verification...");
+    }
+
+    while (true) {
       await new Promise((res) => setTimeout(res, 3000));
 
-      const statusRes = await api.get(`/cli/poll?code=${deviceCode}`);
+      const pollRes = await api.get(`/cli/poll?code=${deviceCode}`);
 
-      if (statusRes.data.verified) {
-        // userId comes back from the status poll, now exchange it for tokens
-        console.log("Verified user:", statusRes.data.userId);
+      if (pollRes.data?.expired) {
+        console.log("❌ Code expired. Run: storemyapi login");
+        return;
+      }
 
-        const tokenRes = await axios.post(
-          "https://storemyapi.dev/api/cli/token",
-          {
-            userId: statusRes.data.userId,
-          }
-        );
+      if (pollRes.data?.verified) {
+        const userId = pollRes.data.userId;
 
-        console.log("Token received:", tokenRes.data);
-
-        // the token endpoint should respond with the same shape we were
-        // previously getting in the status response
+        const tokenRes = await api.post("/cli/token", { userId });
         const { token } = tokenRes.data;
 
-saveConfig({
-  accessToken: token,
-  userId: statusRes.data.userId,
-});
+        saveConfig({
+          accessToken: token,
+          userId,
+        });
 
-        // Display centered success message
-        console.log("\n");
-        console.log("╔════════════════════════════════════════╗");
-        console.log("║   ✅ CLI Authentication                ║");
-        console.log("║   CLI authenticated successfully.      ║");
-        console.log("║   You can now close this window.       ║");
-        console.log("╚════════════════════════════════════════╝");
-        console.log("\n");
-        authenticated = true;
+        console.log("\n✅ Logged in successfully!");
+        return;
       }
     }
   } catch (err: any) {
-    console.error("Login failed:", err.message);
+    const status = err?.response?.status;
+    const url = err?.config?.url;
+    const data = err?.response?.data;
+    console.error("Login failed:", status, url, data || err.message);
   }
 }
