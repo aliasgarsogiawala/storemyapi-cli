@@ -1,21 +1,6 @@
 # StoreMyAPI CLI
 
-A secure, cloud-synced environment variable manager for your development workflow.
-
-**Version:** 1.0.5
-
-## Overview
-
-StoreMyAPI CLI is a command-line tool that provides seamless management of environment variables across your development environment. Authenticate securely via browser and manage your projects with confidence.
-
-## Features
-
-- **Secure Browser-Based Authentication** - OAuth-style device flow authentication
-- **Project Management** - Initialize and manage projects locally
-- **Cloud-Synced Configuration** - Store your project configuration securely
-- **Session Management** - Track and logout of active sessions
-- **Cross-Device Access** - Access your configuration from any machine
-- **Zero-Config Setup** - Minimal configuration required
+A command-line tool to sync your `.env` keys to the cloud and share them across machines and teammates.
 
 ## Installation
 
@@ -23,226 +8,77 @@ StoreMyAPI CLI is a command-line tool that provides seamless management of envir
 npm install -g storemyapi
 ```
 
-Alternatively, install locally in your project:
-
-```bash
-npm install --save-dev storemyapi
-```
-
-## Quick Start
-
-### 1. Login
-
-Start the authentication flow:
+## Getting started
 
 ```bash
 storemyapi login
-```
-
-This will open your browser for authentication and store your access token locally.
-
-### 2. Initialize a Project
-
-Set up a project in your current directory:
-
-```bash
 storemyapi init
+storemyapi push
 ```
 
-You'll be prompted for:
-- **Project name** (defaults to current folder name)
-- **Description** (optional)
-
-Creates a `.storemyapi.json` file linking your local folder to the project.
-
-### 3. Verify Authentication
-
-Check your current logged-in user:
-
-```bash
-storemyapi whoami
-```
-
-### 4. Logout
-
-End your session:
-
-```bash
-storemyapi logout
-```
+That's it. Your keys are in the cloud. On another machine, run `storemyapi pull` and you're back in business.
 
 ## Commands
 
 ### `login`
 
-Initiates CLI authentication via browser.
+Opens a browser to authenticate. If that's not possible, use `--no-browser` and follow the instructions in the terminal.
 
 ```bash
-storemyapi login [options]
-```
-
-**Options:**
-- `--no-browser` - Display authentication URL instead of opening browser automatically
-
-**Output:**
-```
-Opening browser for authentication...
-Login successful!
+storemyapi login
+storemyapi login --no-browser
 ```
 
 ### `whoami`
 
-Displays the currently authenticated user.
-
-```bash
-storemyapi whoami
-```
-
-**Output:**
-```
-Logged in as: your-email@example.com
-```
+Shows who you're currently logged in as.
 
 ### `logout`
 
-Logs out and clears your local authentication token.
+Clears your local session.
 
-```bash
-storemyapi logout
-```
+### `projects`
 
-**Output:**
-```
-Logged out successfully.
-Session duration: 2h 15m
-```
+Lists all your projects with their key counts and roles.
 
 ### `init`
 
-Initializes a StoreMyAPI project in your current folder.
+Creates a new project and links it to your current folder. Writes a `.storemyapi.json` file — safe to commit.
+
+### `link`
+
+Links an existing project to your current folder. You can pass a project name or ID directly, or pick from a list.
 
 ```bash
-storemyapi init
+storemyapi link
+storemyapi link my-project
+storemyapi link <project-id>
 ```
 
-**Prompts:**
-- Project name (required)
-- Description (optional)
+### `push`
 
-**Creates:**
-- `.storemyapi.json` - Local project configuration
+Pushes keys from your local `.env` to the project. Pushes everything by default, or a single key if specified.
 
-**Output:**
-```
-Initialized!
-Project created: my-project
-Linked locally via .storemyapi.json
-```
-
-## Configuration Files
-
-### `.storemyapi/config.json`
-
-Located in your home directory (`~/.storemyapi/config.json`). Contains:
-- `accessToken` - Your authentication token
-- `userId` - Your user identifier
-
-**Security:** Never share or commit this file. Add `~/.storemyapi/` to your `.gitignore`.
-
-### `.storemyapi.json`
-
-Located in your project folder. Contains:
-- `projectId` - Your project's unique identifier
-- `projectName` - Project name
-- `createdAt` - Project creation timestamp
-
-Safe to commit to version control.
-
-## System Requirements
-
-- Node.js 18.0 or higher
-- macOS, Linux, or Windows
-- Default web browser (for authentication)
-
-## Troubleshooting
-
-### "You are not logged in"
-
-Run the login command:
 ```bash
-storemyapi login
+storemyapi push
+storemyapi push API_KEY
 ```
 
-### Browser doesn't open automatically
+### `pull`
 
-Use the `--no-browser` flag and manually visit the displayed URL:
+Pulls keys from the project into your local `.env`. Merges with what's already there.
+
 ```bash
-storemyapi login --no-browser
+storemyapi pull
+storemyapi pull API_KEY
 ```
 
-### "Project already initialized"
+## Files
 
-A `.storemyapi.json` file already exists in this folder. Remove it if you want to reinitialize:
-```bash
-rm .storemyapi.json
-storemyapi init
-```
+- `~/.storemyapi/config.json` — stores your auth token. Never commit this.
+- `.storemyapi.json` — links your folder to a project. Safe to commit.
+- `.env` — where pulled keys land and pushed keys are read from.
 
-### Command not found
+## Requirements
 
-If installed globally, ensure npm's bin directory is in your PATH:
-```bash
-npm config get prefix
-```
-
-Add the returned path's `bin` directory to your system PATH.
-
-## Project Structure
-
-```
-storemyapi-cli/
-├── src/
-│   ├── index.ts              # CLI entry point
-│   ├── commands/
-│   │   ├── login.ts          # Authentication handler
-│   │   ├── logout.ts         # Session termination
-│   │   ├── whoami.ts         # User info display
-│   │   └── init.ts           # Project initialization
-│   └── utils/
-│       ├── api.ts            # API client
-│       └── config.ts         # Config file management
-├── dist/                     # Compiled output
-├── tsconfig.json
-└── package.json
-```
-
-## Dependencies
-
-- **commander** ^14.0.3 - CLI framework
-- **axios** ^1.13.6 - HTTP client
-- **inquirer** ^9.0.0 - Interactive prompts
-- **open** ^11.0.0 - Open URLs in browser
-- **jwt-decode** ^4.0.0 - Token parsing
-
-## Changelog
-
-### Version 1.0.5
-
-- Enhanced `init` command with project description support
-- Improved error logging and diagnostics
-- Better terminal output formatting
-- Updated documentation
-
-### Version 1.0.4
-
-- Added `logout` command with session tracking
-- Improved configuration cleanup
-
-### Version 1.0.3
-
-- Enhanced authentication UI
-- Better error messages
-
----
-
-**Built with TypeScript • Node.js CLI**
+Node.js 18 or higher.
