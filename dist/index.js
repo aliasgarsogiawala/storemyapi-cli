@@ -10,6 +10,7 @@ const projects_1 = require("./commands/projects");
 const link_1 = require("./commands/link");
 const pull_1 = require("./commands/pull");
 const push_1 = require("./commands/push");
+const keys_1 = require("./commands/keys");
 const program = new commander_1.Command();
 program
     .name("storemyapi")
@@ -48,4 +49,21 @@ program
     .command("push [key]")
     .description("Push keys from .env to project (all keys, or a specific one)")
     .action((key) => (0, push_1.push)(key));
+const key = program.command("key").description("Manage individual keys in the linked project");
+key
+    .command("get <name>")
+    .description("Get a key's value from the project")
+    .action((name) => (0, keys_1.keyGet)(name));
+key
+    .command("set <name> <value>")
+    .description("Set a key's value in the project")
+    .action((name, value) => (0, keys_1.keySet)(name, value));
+key
+    .command("delete <name>")
+    .description("Delete a key from the project")
+    .action((name) => (0, keys_1.keyDelete)(name));
+key
+    .command("list")
+    .description("List all keys in the project")
+    .action(keys_1.keyList);
 program.parse();

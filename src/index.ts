@@ -9,6 +9,7 @@ import { projects } from "./commands/projects";
 import { link } from "./commands/link";
 import { pull } from "./commands/pull";
 import { push } from "./commands/push";
+import { keyGet, keySet, keyDelete, keyList } from "./commands/keys";
 
 const program = new Command();
 
@@ -57,5 +58,27 @@ program
   .command("push [key]")
   .description("Push keys from .env to project (all keys, or a specific one)")
   .action((key) => push(key));
+
+const key = program.command("key").description("Manage individual keys in the linked project");
+
+key
+  .command("get <name>")
+  .description("Get a key's value from the project")
+  .action((name) => keyGet(name));
+
+key
+  .command("set <name> <value>")
+  .description("Set a key's value in the project")
+  .action((name, value) => keySet(name, value));
+
+key
+  .command("delete <name>")
+  .description("Delete a key from the project")
+  .action((name) => keyDelete(name));
+
+key
+  .command("list")
+  .description("List all keys in the project")
+  .action(keyList);
 
 program.parse();
