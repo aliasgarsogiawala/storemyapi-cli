@@ -12,6 +12,8 @@ const pull_1 = require("./commands/pull");
 const push_1 = require("./commands/push");
 const keys_1 = require("./commands/keys");
 const share_1 = require("./commands/share");
+const doctor_1 = require("./commands/doctor");
+const audit_1 = require("./commands/audit");
 const program = new commander_1.Command();
 program
     .name("storemyapi")
@@ -92,4 +94,12 @@ share
     .command("decline <inviteId>")
     .description("Decline a pending invite")
     .action((inviteId) => (0, share_1.shareDecline)(inviteId));
+program
+    .command("doctor")
+    .description("Check your setup and connection health")
+    .action(doctor_1.doctor);
+program
+    .command("audit")
+    .description("Compare local .env with cloud keys and show what is out of sync")
+    .action(audit_1.audit);
 program.parse();

@@ -47,7 +47,7 @@ Creates a new project and links it to your current folder. Writes a `.storemyapi
 
 ### `link`
 
-Links an existing project to your current folder. Pass a name or ID directly, or pick from a list.
+Links an existing project to your current folder. Pass a name or ID directly, or pick from a list. If a project is already linked, it will ask before switching.
 
 ```bash
 storemyapi link
@@ -99,16 +99,40 @@ storemyapi share remove teammate@example.com
 storemyapi share list
 ```
 
-`share list` shows everyone who has access and their permission level.
-
 **As the receiver:**
 
 ```bash
 storemyapi share invites
 ```
 
-Lists your pending invites as a dropdown. Select one and you'll be asked to accept or decline on the spot. After accepting, run `storemyapi link` to link the project to a local folder.
+Lists your pending invites as a dropdown. Select one and you'll be asked to accept or decline on the spot. After accepting, run `storemyapi link` to connect the project to a local folder.
 
+### `doctor`
+
+Checks your setup end to end — Node version, auth, API connectivity, linked project, and whether a `.env` file exists. Good first step when something feels off.
+
+```bash
+storemyapi doctor
+```
+
+### `audit`
+
+Compares your local `.env` against the cloud and shows what's out of sync. Tells you exactly what to run to fix it.
+
+```bash
+storemyapi audit
+```
+
+Reports three things:
+- Keys in the cloud that are missing from your `.env`
+- Keys in your `.env` that haven't been pushed to the cloud
+- Keys that exist on both sides but have different values
+
+## Files
+
+- `~/.storemyapi/config.json` — stores your auth token. Never commit this.
+- `.storemyapi.json` — links your folder to a project. Gitignored by default.
+- `.env` — where pulled keys land and pushed keys are read from.
 
 ## Requirements
 

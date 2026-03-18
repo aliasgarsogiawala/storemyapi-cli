@@ -69,6 +69,16 @@ async function manualSelect(projects: any[]) {
   }
 }
 
+function readLocal(): { projectId: string; projectName: string } | null {
+  const p = localPath();
+  if (!fs.existsSync(p)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(p, "utf-8"));
+  } catch {
+    return null;
+  }
+}
+
 export async function link(nameOrId?: string) {
   try {
     const auth = getConfig();
@@ -77,6 +87,23 @@ export async function link(nameOrId?: string) {
       console.log(chalk.red("Not authenticated."));
       console.log("Run 'storemyapi login' first.");
       return;
+    }
+
+    const existing = readLocal();
+    if (existing) {
+      console.log(`Currently linked to: ${chalk.bold(existing.projectName)}`);
+      const { proceed } = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "proceed",
+          message: "Switch to a different project?",
+          default: false,
+        },
+      ]);
+      if (!proceed) {
+        console.log(chalk.yellow("Aborted."));
+        return;
+      }
     }
 
     const res = await api.get("/projects", {
@@ -128,7 +155,6 @@ export async function link(nameOrId?: string) {
 
         selectedProject = projects.find((p: any) => p.id === answer.projectId) ?? null;
       } catch {
-        // fall through to manual selection
         selectedProject = null;
       }
     }

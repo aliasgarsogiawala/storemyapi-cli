@@ -52,6 +52,17 @@ async function manualSelect(projects) {
         console.log("Invalid selection. Try again.");
     }
 }
+function readLocal() {
+    const p = localPath();
+    if (!fs_1.default.existsSync(p))
+        return null;
+    try {
+        return JSON.parse(fs_1.default.readFileSync(p, "utf-8"));
+    }
+    catch {
+        return null;
+    }
+}
 async function link(nameOrId) {
     try {
         const auth = (0, config_1.getConfig)();
@@ -59,6 +70,22 @@ async function link(nameOrId) {
             console.log(chalk_1.default.red("Not authenticated."));
             console.log("Run 'storemyapi login' first.");
             return;
+        }
+        const existing = readLocal();
+        if (existing) {
+            console.log(`Currently linked to: ${chalk_1.default.bold(existing.projectName)}`);
+            const { proceed } = await inquirer_1.default.prompt([
+                {
+                    type: "confirm",
+                    name: "proceed",
+                    message: "Switch to a different project?",
+                    default: false,
+                },
+            ]);
+            if (!proceed) {
+                console.log(chalk_1.default.yellow("Aborted."));
+                return;
+            }
         }
         const res = await api_1.api.get("/projects", {
             headers: { Authorization: `Bearer ${auth.accessToken}` },
@@ -99,7 +126,6 @@ async function link(nameOrId) {
                 selectedProject = projects.find((p) => p.id === answer.projectId) ?? null;
             }
             catch {
-                // fall through to manual selection
                 selectedProject = null;
             }
         }

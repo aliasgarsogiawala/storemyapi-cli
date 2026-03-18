@@ -11,6 +11,8 @@ import { pull } from "./commands/pull";
 import { push } from "./commands/push";
 import { keyGet, keySet, keyDelete, keyList } from "./commands/keys";
 import { shareAdd, shareRemove, shareList, shareInvites, shareAccept, shareDecline } from "./commands/share";
+import { doctor } from "./commands/doctor";
+import { audit } from "./commands/audit";
 
 const program = new Command();
 
@@ -113,5 +115,15 @@ share
   .command("decline <inviteId>")
   .description("Decline a pending invite")
   .action((inviteId) => shareDecline(inviteId));
+
+program
+  .command("doctor")
+  .description("Check your setup and connection health")
+  .action(doctor);
+
+program
+  .command("audit")
+  .description("Compare local .env with cloud keys and show what is out of sync")
+  .action(audit);
 
 program.parse();
