@@ -4,26 +4,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.whoami = whoami;
-const axios_1 = __importDefault(require("axios"));
+const chalk_1 = __importDefault(require("chalk"));
+const api_1 = require("../utils/api");
 const config_1 = require("../utils/config");
 async function whoami() {
     try {
         const config = (0, config_1.getConfig)();
         if (!config?.accessToken) {
-            console.log("❌ You are not logged in.");
+            console.log(chalk_1.default.red("Not authenticated."));
             console.log("Run: storemyapi login");
             return;
         }
-        const res = await axios_1.default.get("https://storemyapi.dev/api/cli/me", {
-            headers: {
-                Authorization: `Bearer ${config.accessToken}`,
-            },
+        const res = await api_1.api.get("/cli/me", {
+            headers: { Authorization: `Bearer ${config.accessToken}` },
         });
-        console.log("👤 Logged in as:");
-        console.log("User:", res.data.email);
+        console.log(`Logged in as: ${chalk_1.default.bold(res.data.email)}`);
     }
     catch (err) {
-        console.log("❌ Session invalid or expired.");
+        const status = err?.response?.status;
+        if (status === 401) {
+            console.log(chalk_1.default.red("Session expired."));
+        }
+        else {
+            console.log(chalk_1.default.red("Could not reach API."));
+        }
         console.log("Run: storemyapi login");
     }
 }

@@ -1,4 +1,5 @@
-import axios from "axios";
+import chalk from "chalk";
+import { api } from "../utils/api";
 import { getConfig } from "../utils/config";
 
 export async function whoami() {
@@ -6,25 +7,23 @@ export async function whoami() {
     const config = getConfig();
 
     if (!config?.accessToken) {
-      console.log("❌ You are not logged in.");
+      console.log(chalk.red("Not authenticated."));
       console.log("Run: storemyapi login");
       return;
     }
 
-    const res = await axios.get(
-      "https://storemyapi.dev/api/cli/me",
-      {
-        headers: {
-          Authorization: `Bearer ${config.accessToken}`,
-        },
-      }
-    );
+    const res = await api.get("/cli/me", {
+      headers: { Authorization: `Bearer ${config.accessToken}` },
+    });
 
-    console.log("👤 Logged in as:");
-    console.log("User:", res.data.email);
-
+    console.log(`Logged in as: ${chalk.bold(res.data.email)}`);
   } catch (err: any) {
-    console.log("❌ Session invalid or expired.");
+    const status = err?.response?.status;
+    if (status === 401) {
+      console.log(chalk.red("Session expired."));
+    } else {
+      console.log(chalk.red("Could not reach API."));
+    }
     console.log("Run: storemyapi login");
   }
 }

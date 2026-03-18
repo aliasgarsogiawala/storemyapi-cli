@@ -13,6 +13,7 @@ import { keyGet, keySet, keyDelete, keyList } from "./commands/keys";
 import { shareAdd, shareRemove, shareList, shareInvites, shareAccept, shareDecline } from "./commands/share";
 import { doctor } from "./commands/doctor";
 import { audit } from "./commands/audit";
+import { envRun } from "./commands/env";
 
 const program = new Command();
 
@@ -125,5 +126,15 @@ program
   .command("audit")
   .description("Compare local .env with cloud keys and show what is out of sync")
   .action(audit);
+
+const env = program.command("env").description("Run commands with cloud keys injected as environment variables").enablePositionalOptions();
+
+env
+  .command("run")
+  .description("Run a command with cloud keys injected into the environment")
+  .allowUnknownOption()
+  .passThroughOptions()
+  .argument("[args...]")
+  .action((args) => envRun(args));
 
 program.parse();

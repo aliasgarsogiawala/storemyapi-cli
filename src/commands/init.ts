@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import chalk from "chalk";
 import inquirer from "inquirer";
 import { api } from "../utils/api";
 import { getConfig } from "../utils/config";
@@ -14,15 +15,13 @@ export async function init() {
   try {
     const auth = getConfig();
     if (!auth?.accessToken) {
-      console.log("❌ You are not logged in.");
+      console.log(chalk.red("Not authenticated."));
       console.log("Run: storemyapi login");
       return;
     }
 
-    console.log("token:", auth.accessToken?.slice(0, 25));
-
     if (fs.existsSync(localPath())) {
-      console.log(`⚠️ ${LOCAL_FILE} already exists in this folder.`);
+      console.log(chalk.yellow(`${LOCAL_FILE} already exists in this folder.`));
       console.log("This project is already initialized.");
       return;
     }
@@ -44,7 +43,7 @@ export async function init() {
       },
     ]);
 
-    console.log("Creating project on dashboard...");
+    console.log("Creating project...");
 
     const res = await api.post(
       "/projects",
@@ -67,13 +66,12 @@ export async function init() {
       )
     );
 
-    console.log("\n✅ Initialized!");
-    console.log(`Project created: ${project.name}`);
+    console.log(chalk.green("\nInitialized!"));
+    console.log(`Project: ${project.name}`);
     console.log(`Linked locally via ${LOCAL_FILE}`);
   } catch (err: any) {
     const status = err?.response?.status;
-    const url = err?.config?.url;
     const data = err?.response?.data;
-    console.error("Init failed:", status, url, data || err.message);
+    console.error(chalk.red("Init failed:"), status, data || err.message);
   }
 }

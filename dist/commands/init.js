@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.init = init;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+const chalk_1 = __importDefault(require("chalk"));
 const inquirer_1 = __importDefault(require("inquirer"));
 const api_1 = require("../utils/api");
 const config_1 = require("../utils/config");
@@ -17,13 +18,12 @@ async function init() {
     try {
         const auth = (0, config_1.getConfig)();
         if (!auth?.accessToken) {
-            console.log("❌ You are not logged in.");
+            console.log(chalk_1.default.red("Not authenticated."));
             console.log("Run: storemyapi login");
             return;
         }
-        console.log("token:", auth.accessToken?.slice(0, 25));
         if (fs_1.default.existsSync(localPath())) {
-            console.log(`⚠️ ${LOCAL_FILE} already exists in this folder.`);
+            console.log(chalk_1.default.yellow(`${LOCAL_FILE} already exists in this folder.`));
             console.log("This project is already initialized.");
             return;
         }
@@ -42,7 +42,7 @@ async function init() {
                 message: "Description (optional):",
             },
         ]);
-        console.log("Creating project on dashboard...");
+        console.log("Creating project...");
         const res = await api_1.api.post("/projects", { name, description }, { headers: { Authorization: `Bearer ${auth.accessToken}` } });
         const project = res.data.project;
         fs_1.default.writeFileSync(localPath(), JSON.stringify({
@@ -50,14 +50,13 @@ async function init() {
             projectName: project.name,
             createdAt: new Date().toISOString(),
         }, null, 2));
-        console.log("\n✅ Initialized!");
-        console.log(`Project created: ${project.name}`);
+        console.log(chalk_1.default.green("\nInitialized!"));
+        console.log(`Project: ${project.name}`);
         console.log(`Linked locally via ${LOCAL_FILE}`);
     }
     catch (err) {
         const status = err?.response?.status;
-        const url = err?.config?.url;
         const data = err?.response?.data;
-        console.error("Init failed:", status, url, data || err.message);
+        console.error(chalk_1.default.red("Init failed:"), status, data || err.message);
     }
 }

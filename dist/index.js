@@ -14,6 +14,7 @@ const keys_1 = require("./commands/keys");
 const share_1 = require("./commands/share");
 const doctor_1 = require("./commands/doctor");
 const audit_1 = require("./commands/audit");
+const env_1 = require("./commands/env");
 const program = new commander_1.Command();
 program
     .name("storemyapi")
@@ -102,4 +103,12 @@ program
     .command("audit")
     .description("Compare local .env with cloud keys and show what is out of sync")
     .action(audit_1.audit);
+const env = program.command("env").description("Run commands with cloud keys injected as environment variables").enablePositionalOptions();
+env
+    .command("run")
+    .description("Run a command with cloud keys injected into the environment")
+    .allowUnknownOption()
+    .passThroughOptions()
+    .argument("[args...]")
+    .action((args) => (0, env_1.envRun)(args));
 program.parse();
