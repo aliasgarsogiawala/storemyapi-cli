@@ -1,0 +1,7 @@
+src/
+.git/
+.gitignore
+.npmignore
+.storemyapi.json
+tsconfig.json
+*.tsbuildinfo

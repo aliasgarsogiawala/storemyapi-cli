@@ -43,11 +43,11 @@ Lists all your projects with their key counts and roles.
 
 ### `init`
 
-Creates a new project and links it to your current folder. Writes a `.storemyapi.json` file — safe to commit.
+Creates a new project and links it to your current folder. Writes a `.storemyapi.json` file locally.
 
 ### `link`
 
-Links an existing project to your current folder. You can pass a project name or ID directly, or pick from a list.
+Links an existing project to your current folder. Pass a name or ID directly, or pick from a list.
 
 ```bash
 storemyapi link
@@ -73,11 +73,42 @@ storemyapi pull
 storemyapi pull API_KEY
 ```
 
-## Files
+### `key`
 
-- `~/.storemyapi/config.json` — stores your auth token. Never commit this.
-- `.storemyapi.json` — links your folder to a project. Safe to commit.
-- `.env` — where pulled keys land and pushed keys are read from.
+Work with individual keys directly — no `.env` file involved.
+
+```bash
+storemyapi key list
+storemyapi key get API_KEY
+storemyapi key set API_KEY somevalue
+storemyapi key delete API_KEY
+```
+
+`key set` will ask for confirmation before overwriting an existing key.
+
+### `share`
+
+Collaborate with teammates on a project.
+
+**As the owner:**
+
+```bash
+storemyapi share add teammate@example.com read
+storemyapi share add teammate@example.com write
+storemyapi share remove teammate@example.com
+storemyapi share list
+```
+
+`share list` shows everyone who has access and their permission level.
+
+**As the receiver:**
+
+```bash
+storemyapi share invites
+```
+
+Lists your pending invites as a dropdown. Select one and you'll be asked to accept or decline on the spot. After accepting, run `storemyapi link` to link the project to a local folder.
+
 
 ## Requirements
 

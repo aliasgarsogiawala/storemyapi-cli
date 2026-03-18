@@ -10,6 +10,7 @@ import { link } from "./commands/link";
 import { pull } from "./commands/pull";
 import { push } from "./commands/push";
 import { keyGet, keySet, keyDelete, keyList } from "./commands/keys";
+import { shareAdd, shareRemove, shareList, shareInvites, shareAccept, shareDecline } from "./commands/share";
 
 const program = new Command();
 
@@ -80,5 +81,37 @@ key
   .command("list")
   .description("List all keys in the project")
   .action(keyList);
+
+const share = program.command("share").description("Manage collaborator access to the linked project");
+
+share
+  .command("add <email> <permission>")
+  .description("Give a user access to this project (permission: read or write)")
+  .action((email, permission) => shareAdd(email, permission));
+
+share
+  .command("remove <email>")
+  .description("Revoke a user's access to this project")
+  .action((email) => shareRemove(email));
+
+share
+  .command("list")
+  .description("List all collaborators on this project")
+  .action(shareList);
+
+share
+  .command("invites")
+  .description("List all pending invites sent to you")
+  .action(shareInvites);
+
+share
+  .command("accept <inviteId>")
+  .description("Accept a pending invite")
+  .action((inviteId) => shareAccept(inviteId));
+
+share
+  .command("decline <inviteId>")
+  .description("Decline a pending invite")
+  .action((inviteId) => shareDecline(inviteId));
 
 program.parse();

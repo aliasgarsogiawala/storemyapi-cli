@@ -11,6 +11,7 @@ const link_1 = require("./commands/link");
 const pull_1 = require("./commands/pull");
 const push_1 = require("./commands/push");
 const keys_1 = require("./commands/keys");
+const share_1 = require("./commands/share");
 const program = new commander_1.Command();
 program
     .name("storemyapi")
@@ -66,4 +67,29 @@ key
     .command("list")
     .description("List all keys in the project")
     .action(keys_1.keyList);
+const share = program.command("share").description("Manage collaborator access to the linked project");
+share
+    .command("add <email> <permission>")
+    .description("Give a user access to this project (permission: read or write)")
+    .action((email, permission) => (0, share_1.shareAdd)(email, permission));
+share
+    .command("remove <email>")
+    .description("Revoke a user's access to this project")
+    .action((email) => (0, share_1.shareRemove)(email));
+share
+    .command("list")
+    .description("List all collaborators on this project")
+    .action(share_1.shareList);
+share
+    .command("invites")
+    .description("List all pending invites sent to you")
+    .action(share_1.shareInvites);
+share
+    .command("accept <inviteId>")
+    .description("Accept a pending invite")
+    .action((inviteId) => (0, share_1.shareAccept)(inviteId));
+share
+    .command("decline <inviteId>")
+    .description("Decline a pending invite")
+    .action((inviteId) => (0, share_1.shareDecline)(inviteId));
 program.parse();
