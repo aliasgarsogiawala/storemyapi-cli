@@ -44,7 +44,10 @@ export async function keyGet(keyName: string) {
     if (!projectId) return;
 
     const headers = { Authorization: `Bearer ${auth.accessToken}` };
-    const res = await api.get(`/projects/${projectId}/keys/${encodeURIComponent(keyName)}`, { headers });
+    const res = await api.get(
+      `/cli/keys/${encodeURIComponent(keyName)}?projectId=${projectId}`,
+      { headers }
+    );
     const { key, value } = res.data;
     console.log(`${chalk.bold(key)}=${value}`);
   } catch (err: any) {
@@ -66,9 +69,13 @@ export async function keySet(keyName: string, value: string) {
 
     const headers = { Authorization: `Bearer ${auth.accessToken}` };
 
+    // Check existence first
     let exists = false;
     try {
-      await api.get(`/projects/${projectId}/keys/${encodeURIComponent(keyName)}`, { headers });
+      await api.get(
+        `/cli/keys/${encodeURIComponent(keyName)}?projectId=${projectId}`,
+        { headers }
+      );
       exists = true;
     } catch (err: any) {
       if (err?.response?.status !== 404) throw err;
@@ -89,7 +96,11 @@ export async function keySet(keyName: string, value: string) {
       }
     }
 
-    await api.post(`/projects/${projectId}/keys`, { key: keyName, value }, { headers });
+    await api.post(
+      `/cli/keys`,
+      { key: keyName, value, projectId },
+      { headers }
+    );
     console.log(chalk.green(`Set: ${keyName}`));
   } catch (err: any) {
     console.error(chalk.red("key set failed:"), err?.response?.data || err.message);
@@ -104,7 +115,10 @@ export async function keyDelete(keyName: string) {
     if (!projectId) return;
 
     const headers = { Authorization: `Bearer ${auth.accessToken}` };
-    await api.delete(`/projects/${projectId}/keys/${encodeURIComponent(keyName)}`, { headers });
+    await api.delete(
+      `/cli/keys/${encodeURIComponent(keyName)}?projectId=${projectId}`,
+      { headers }
+    );
     console.log(chalk.green(`Deleted: ${keyName}`));
   } catch (err: any) {
     const status = err?.response?.status;
@@ -124,7 +138,7 @@ export async function keyList() {
     if (!projectId) return;
 
     const headers = { Authorization: `Bearer ${auth.accessToken}` };
-    const res = await api.get(`/projects/${projectId}/keys`, { headers });
+    const res = await api.get(`/cli/keys?projectId=${projectId}`, { headers });
     const keys: { key: string; value: string }[] = res.data?.keys ?? [];
 
     if (!keys.length) {

@@ -84,7 +84,7 @@ async function keyGet(keyName) {
         if (!projectId)
             return;
         const headers = { Authorization: `Bearer ${auth.accessToken}` };
-        const res = await api_1.api.get(`/projects/${projectId}/keys/${encodeURIComponent(keyName)}`, { headers });
+        const res = await api_1.api.get(`/cli/keys/${encodeURIComponent(keyName)}?projectId=${projectId}`, { headers });
         const { key, value } = res.data;
         console.log(`${chalk_1.default.bold(key)}=${value}`);
     }
@@ -106,9 +106,10 @@ async function keySet(keyName, value) {
         if (!projectId)
             return;
         const headers = { Authorization: `Bearer ${auth.accessToken}` };
+        // Check existence first
         let exists = false;
         try {
-            await api_1.api.get(`/projects/${projectId}/keys/${encodeURIComponent(keyName)}`, { headers });
+            await api_1.api.get(`/cli/keys/${encodeURIComponent(keyName)}?projectId=${projectId}`, { headers });
             exists = true;
         }
         catch (err) {
@@ -129,7 +130,7 @@ async function keySet(keyName, value) {
                 return;
             }
         }
-        await api_1.api.post(`/projects/${projectId}/keys`, { key: keyName, value }, { headers });
+        await api_1.api.post(`/cli/keys`, { key: keyName, value, projectId }, { headers });
         console.log(chalk_1.default.green(`Set: ${keyName}`));
     }
     catch (err) {
@@ -145,7 +146,7 @@ async function keyDelete(keyName) {
         if (!projectId)
             return;
         const headers = { Authorization: `Bearer ${auth.accessToken}` };
-        await api_1.api.delete(`/projects/${projectId}/keys/${encodeURIComponent(keyName)}`, { headers });
+        await api_1.api.delete(`/cli/keys/${encodeURIComponent(keyName)}?projectId=${projectId}`, { headers });
         console.log(chalk_1.default.green(`Deleted: ${keyName}`));
     }
     catch (err) {
@@ -166,7 +167,7 @@ async function keyList() {
         if (!projectId)
             return;
         const headers = { Authorization: `Bearer ${auth.accessToken}` };
-        const res = await api_1.api.get(`/projects/${projectId}/keys`, { headers });
+        const res = await api_1.api.get(`/cli/keys?projectId=${projectId}`, { headers });
         const keys = res.data?.keys ?? [];
         if (!keys.length) {
             console.log(chalk_1.default.yellow("No keys in this project."));

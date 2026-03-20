@@ -91,8 +91,8 @@ export async function push(keyName?: string, opts: { file?: string } = {}) {
         return;
       }
       await api.post(
-        `/projects/${projectId}/keys`,
-        { key: keyName, value: allKeys[keyName] },
+        `/cli/keys`,
+        { key: keyName, value: allKeys[keyName], projectId },
         { headers }
       );
       console.log(chalk.green(`Pushed: ${keyName}`) + chalk.gray(`  (from ${envFile})`));
@@ -101,8 +101,8 @@ export async function push(keyName?: string, opts: { file?: string } = {}) {
 
     const entries = Object.entries(allKeys);
     await api.post(
-      `/projects/${projectId}/keys/bulk`,
-      { keys: entries.map(([key, value]) => ({ key, value })) },
+      `/cli/keys`,
+      { keys: entries.map(([key, value]) => ({ key, value })), projectId },
       { headers }
     );
     console.log(chalk.green(`Pushed ${entries.length} key(s) to project`) + chalk.gray(`  (from ${envFile})`));

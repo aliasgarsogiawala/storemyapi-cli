@@ -91,12 +91,12 @@ async function push(keyName, opts = {}) {
                 console.log(chalk_1.default.red(`Key "${keyName}" not found in ${envFile}`));
                 return;
             }
-            await api_1.api.post(`/projects/${projectId}/keys`, { key: keyName, value: allKeys[keyName] }, { headers });
+            await api_1.api.post(`/cli/keys`, { key: keyName, value: allKeys[keyName], projectId }, { headers });
             console.log(chalk_1.default.green(`Pushed: ${keyName}`) + chalk_1.default.gray(`  (from ${envFile})`));
             return;
         }
         const entries = Object.entries(allKeys);
-        await api_1.api.post(`/projects/${projectId}/keys/bulk`, { keys: entries.map(([key, value]) => ({ key, value })) }, { headers });
+        await api_1.api.post(`/cli/keys`, { keys: entries.map(([key, value]) => ({ key, value })), projectId }, { headers });
         console.log(chalk_1.default.green(`Pushed ${entries.length} key(s) to project`) + chalk_1.default.gray(`  (from ${envFile})`));
     }
     catch (err) {

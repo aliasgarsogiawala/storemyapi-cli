@@ -82,13 +82,13 @@ async function pull(keyName, opts = {}) {
         const envFile = path_1.default.basename(envPath);
         const headers = { Authorization: `Bearer ${auth.accessToken}` };
         if (keyName) {
-            const res = await api_1.api.get(`/projects/${projectId}/keys/${encodeURIComponent(keyName)}`, { headers });
+            const res = await api_1.api.get(`/cli/keys/${encodeURIComponent(keyName)}?projectId=${projectId}`, { headers });
             const { key, value } = res.data;
             mergeIntoEnvFile(envPath, { [key]: value });
             console.log(chalk_1.default.green(`Pulled: ${key}`) + chalk_1.default.gray(`  (into ${envFile})`));
             return;
         }
-        const res = await api_1.api.get(`/projects/${projectId}/keys`, { headers });
+        const res = await api_1.api.get(`/cli/keys?projectId=${projectId}`, { headers });
         const keys = res.data?.keys ?? [];
         if (!keys.length) {
             console.log(chalk_1.default.yellow("No keys found in this project."));

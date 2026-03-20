@@ -81,14 +81,14 @@ export async function pull(keyName?: string, opts: { file?: string } = {}) {
     const headers = { Authorization: `Bearer ${auth.accessToken}` };
 
     if (keyName) {
-      const res = await api.get(`/projects/${projectId}/keys/${encodeURIComponent(keyName)}`, { headers });
+      const res = await api.get(`/cli/keys/${encodeURIComponent(keyName)}?projectId=${projectId}`, { headers });
       const { key, value } = res.data;
       mergeIntoEnvFile(envPath, { [key]: value });
       console.log(chalk.green(`Pulled: ${key}`) + chalk.gray(`  (into ${envFile})`));
       return;
     }
 
-    const res = await api.get(`/projects/${projectId}/keys`, { headers });
+    const res = await api.get(`/cli/keys?projectId=${projectId}`, { headers });
     const keys: { key: string; value: string }[] = res.data?.keys ?? [];
 
     if (!keys.length) {
