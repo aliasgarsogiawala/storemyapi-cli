@@ -6,6 +6,8 @@ import { getConfig } from "../utils/config";
 
 const LOCAL_FILE = ".storemyapi.json";
 
+const ENV_CANDIDATES = [".env.local", ".env"];
+
 function localPath() {
   return path.join(process.cwd(), LOCAL_FILE);
 }
@@ -18,6 +20,17 @@ function getProjectId(): string | null {
   } catch {
     return null;
   }
+}
+
+function resolveEnvFile(file?: string): string {
+  if (file) return path.resolve(process.cwd(), file);
+  // Auto-detect: prefer .env.local, fall back to .env
+  for (const candidate of ENV_CANDIDATES) {
+    const p = path.join(process.cwd(), candidate);
+    if (fs.existsSync(p)) return p;
+  }
+  // Default to .env (will be created if it doesn't exist)
+  return path.join(process.cwd(), ".env");
 }
 
 function readEnvFile(filePath: string): Record<string, string> {
@@ -47,7 +60,7 @@ function mergeIntoEnvFile(filePath: string, incoming: Record<string, string>) {
   writeEnvFile(filePath, merged);
 }
 
-export async function pull(keyName?: string) {
+export async function pull(keyName?: string, opts: { file?: string } = {}) {
   try {
     const auth = getConfig();
     if (!auth?.accessToken) {
@@ -63,14 +76,15 @@ export async function pull(keyName?: string) {
       return;
     }
 
-    const envPath = path.join(process.cwd(), ".env");
+    const envPath = resolveEnvFile(opts.file);
+    const envFile = path.basename(envPath);
     const headers = { Authorization: `Bearer ${auth.accessToken}` };
 
     if (keyName) {
       const res = await api.get(`/projects/${projectId}/keys/${encodeURIComponent(keyName)}`, { headers });
       const { key, value } = res.data;
       mergeIntoEnvFile(envPath, { [key]: value });
-      console.log(chalk.green(`Pulled: ${key}`));
+      console.log(chalk.green(`Pulled: ${key}`) + chalk.gray(`  (into ${envFile})`));
       return;
     }
 
@@ -88,7 +102,7 @@ export async function pull(keyName?: string) {
     }
 
     mergeIntoEnvFile(envPath, incoming);
-    console.log(chalk.green(`Pulled ${keys.length} key(s) into .env`));
+    console.log(chalk.green(`Pulled ${keys.length} key(s) into ${envFile}`));
   } catch (err: any) {
     const status = err?.response?.status;
     const data = err?.response?.data;

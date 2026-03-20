@@ -10,6 +10,7 @@ const chalk_1 = __importDefault(require("chalk"));
 const api_1 = require("../utils/api");
 const config_1 = require("../utils/config");
 const LOCAL_FILE = ".storemyapi.json";
+const ENV_CANDIDATES = [".env.local", ".env"];
 function getProjectLocal() {
     const p = path_1.default.join(process.cwd(), LOCAL_FILE);
     if (!fs_1.default.existsSync(p))
@@ -20,6 +21,18 @@ function getProjectLocal() {
     catch {
         return null;
     }
+}
+function resolveEnvFile(file) {
+    if (file) {
+        const p = path_1.default.resolve(process.cwd(), file);
+        return fs_1.default.existsSync(p) ? p : null;
+    }
+    for (const candidate of ENV_CANDIDATES) {
+        const p = path_1.default.join(process.cwd(), candidate);
+        if (fs_1.default.existsSync(p))
+            return p;
+    }
+    return null;
 }
 function readEnvFile(filePath) {
     if (!fs_1.default.existsSync(filePath))
@@ -39,7 +52,7 @@ function readEnvFile(filePath) {
     }
     return result;
 }
-async function audit() {
+async function audit(opts = {}) {
     try {
         const auth = (0, config_1.getConfig)();
         if (!auth?.accessToken) {
@@ -53,12 +66,18 @@ async function audit() {
             console.log("Run: storemyapi init  or  storemyapi link");
             return;
         }
-        const envPath = path_1.default.join(process.cwd(), ".env");
-        if (!fs_1.default.existsSync(envPath)) {
-            console.log(chalk_1.default.red("No .env file found in this directory."));
-            console.log("Run: storemyapi pull  to fetch keys from the cloud.");
+        const envPath = resolveEnvFile(opts.file);
+        if (!envPath) {
+            if (opts.file) {
+                console.log(chalk_1.default.red(`File not found: ${opts.file}`));
+            }
+            else {
+                console.log(chalk_1.default.red("No .env or .env.local file found in this directory."));
+                console.log("Run: storemyapi pull  to fetch keys from the cloud.");
+            }
             return;
         }
+        const envFile = path_1.default.basename(envPath);
         const headers = { Authorization: `Bearer ${auth.accessToken}` };
         const res = await api_1.api.get(`/projects/${local.projectId}/keys`, { headers });
         const cloudKeys = res.data?.keys ?? [];
@@ -70,14 +89,14 @@ async function audit() {
         const onlyInLocal = Object.keys(localMap).filter((k) => !(k in cloudMap));
         const outOfSync = cloudKeys.filter((k) => k.key in localMap && localMap[k.key] !== k.value);
         const allClean = !onlyInCloud.length && !onlyInLocal.length && !outOfSync.length;
-        console.log(`\nAudit: ${chalk_1.default.bold(local.projectName)}\n`);
+        console.log(`\nAudit: ${chalk_1.default.bold(local.projectName)} ${chalk_1.default.gray(`(${envFile})`)}\n`);
         if (allClean) {
             console.log(chalk_1.default.green("Everything is in sync."));
             console.log("");
             return;
         }
         if (onlyInCloud.length) {
-            console.log(chalk_1.default.yellow(`In cloud, missing from .env (${onlyInCloud.length}):`));
+            console.log(chalk_1.default.yellow(`In cloud, missing from ${envFile} (${onlyInCloud.length}):`));
             for (const k of onlyInCloud) {
                 console.log(`  ${chalk_1.default.bold(k.key)}`);
             }
@@ -85,7 +104,7 @@ async function audit() {
             console.log("");
         }
         if (onlyInLocal.length) {
-            console.log(chalk_1.default.yellow(`In .env, not in cloud (${onlyInLocal.length}):`));
+            console.log(chalk_1.default.yellow(`In ${envFile}, not in cloud (${onlyInLocal.length}):`));
             for (const k of onlyInLocal) {
                 console.log(`  ${chalk_1.default.bold(k)}`);
             }
@@ -93,7 +112,7 @@ async function audit() {
             console.log("");
         }
         if (outOfSync.length) {
-            console.log(chalk_1.default.yellow(`Values differ between .env and cloud (${outOfSync.length}):`));
+            console.log(chalk_1.default.yellow(`Values differ between ${envFile} and cloud (${outOfSync.length}):`));
             for (const k of outOfSync) {
                 console.log(`  ${chalk_1.default.bold(k.key)}`);
             }

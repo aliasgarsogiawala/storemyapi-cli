@@ -57,25 +57,33 @@ storemyapi link <project-id>
 
 ### `push`
 
-Pushes keys from your local `.env` to the project. Pushes everything by default, or a single key if specified.
+Pushes keys from your local env file to the project. Pushes everything by default, or a single key if specified.
+
+**Auto-detection:** looks for `.env.local` first, then falls back to `.env`. Use `-f` to target a specific file.
 
 ```bash
 storemyapi push
 storemyapi push API_KEY
+storemyapi push -f .env.local
+storemyapi push -f .env.production
 ```
 
 ### `pull`
 
-Pulls keys from the project into your local `.env`. Merges with what's already there.
+Pulls keys from the project into your local env file. Merges with what's already there.
+
+**Auto-detection:** pulls into `.env.local` if it exists, otherwise `.env`. Use `-f` to target a specific file.
 
 ```bash
 storemyapi pull
 storemyapi pull API_KEY
+storemyapi pull -f .env.local
+storemyapi pull -f .env.staging
 ```
 
 ### `key`
 
-Work with individual keys directly — no `.env` file involved.
+Work with individual keys directly — no env file involved.
 
 ```bash
 storemyapi key list
@@ -109,7 +117,7 @@ Lists your pending invites as a dropdown. Select one and you'll be asked to acce
 
 ### `doctor`
 
-Checks your setup end to end — Node version, auth, API connectivity, linked project, and whether a `.env` file exists. Good first step when something feels off.
+Checks your setup end to end — Node version, auth, API connectivity, linked project, and whether a local env file exists. Good first step when something feels off.
 
 ```bash
 storemyapi doctor
@@ -117,22 +125,25 @@ storemyapi doctor
 
 ### `audit`
 
-Compares your local `.env` against the cloud and shows what's out of sync. Tells you exactly what to run to fix it.
+Compares your local env file against the cloud and shows what's out of sync. Tells you exactly what to run to fix it.
+
+**Auto-detection:** checks `.env.local` first, then `.env`. Use `-f` to target a specific file.
 
 ```bash
 storemyapi audit
+storemyapi audit -f .env.local
 ```
 
 Reports three things:
-- Keys in the cloud that are missing from your `.env`
-- Keys in your `.env` that haven't been pushed to the cloud
+- Keys in the cloud that are missing from your local file
+- Keys in your local file that haven't been pushed to the cloud
 - Keys that exist on both sides but have different values
 
 ## Files
 
 - `~/.storemyapi/config.json` — stores your auth token. Never commit this.
 - `.storemyapi.json` — links your folder to a project. Gitignored by default.
-- `.env` — where pulled keys land and pushed keys are read from.
+- `.env` / `.env.local` — where pulled keys land and pushed keys are read from.
 
 ## Requirements
 

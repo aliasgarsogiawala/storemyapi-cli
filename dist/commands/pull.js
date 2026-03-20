@@ -10,6 +10,7 @@ const chalk_1 = __importDefault(require("chalk"));
 const api_1 = require("../utils/api");
 const config_1 = require("../utils/config");
 const LOCAL_FILE = ".storemyapi.json";
+const ENV_CANDIDATES = [".env.local", ".env"];
 function localPath() {
     return path_1.default.join(process.cwd(), LOCAL_FILE);
 }
@@ -23,6 +24,18 @@ function getProjectId() {
     catch {
         return null;
     }
+}
+function resolveEnvFile(file) {
+    if (file)
+        return path_1.default.resolve(process.cwd(), file);
+    // Auto-detect: prefer .env.local, fall back to .env
+    for (const candidate of ENV_CANDIDATES) {
+        const p = path_1.default.join(process.cwd(), candidate);
+        if (fs_1.default.existsSync(p))
+            return p;
+    }
+    // Default to .env (will be created if it doesn't exist)
+    return path_1.default.join(process.cwd(), ".env");
 }
 function readEnvFile(filePath) {
     if (!fs_1.default.existsSync(filePath))
@@ -51,7 +64,7 @@ function mergeIntoEnvFile(filePath, incoming) {
     const merged = { ...existing, ...incoming };
     writeEnvFile(filePath, merged);
 }
-async function pull(keyName) {
+async function pull(keyName, opts = {}) {
     try {
         const auth = (0, config_1.getConfig)();
         if (!auth?.accessToken) {
@@ -65,13 +78,14 @@ async function pull(keyName) {
             console.log("Run: storemyapi init  or  storemyapi link");
             return;
         }
-        const envPath = path_1.default.join(process.cwd(), ".env");
+        const envPath = resolveEnvFile(opts.file);
+        const envFile = path_1.default.basename(envPath);
         const headers = { Authorization: `Bearer ${auth.accessToken}` };
         if (keyName) {
             const res = await api_1.api.get(`/projects/${projectId}/keys/${encodeURIComponent(keyName)}`, { headers });
             const { key, value } = res.data;
             mergeIntoEnvFile(envPath, { [key]: value });
-            console.log(chalk_1.default.green(`Pulled: ${key}`));
+            console.log(chalk_1.default.green(`Pulled: ${key}`) + chalk_1.default.gray(`  (into ${envFile})`));
             return;
         }
         const res = await api_1.api.get(`/projects/${projectId}/keys`, { headers });
@@ -85,7 +99,7 @@ async function pull(keyName) {
             incoming[k.key] = k.value;
         }
         mergeIntoEnvFile(envPath, incoming);
-        console.log(chalk_1.default.green(`Pulled ${keys.length} key(s) into .env`));
+        console.log(chalk_1.default.green(`Pulled ${keys.length} key(s) into ${envFile}`));
     }
     catch (err) {
         const status = err?.response?.status;

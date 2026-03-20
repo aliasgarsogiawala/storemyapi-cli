@@ -6,6 +6,8 @@ import { getConfig } from "../utils/config";
 
 const LOCAL_FILE = ".storemyapi.json";
 
+const ENV_CANDIDATES = [".env.local", ".env"];
+
 function getProjectLocal(): { projectId: string; projectName: string } | null {
   const p = path.join(process.cwd(), LOCAL_FILE);
   if (!fs.existsSync(p)) return null;
@@ -14,6 +16,18 @@ function getProjectLocal(): { projectId: string; projectName: string } | null {
   } catch {
     return null;
   }
+}
+
+function resolveEnvFile(file?: string): string | null {
+  if (file) {
+    const p = path.resolve(process.cwd(), file);
+    return fs.existsSync(p) ? p : null;
+  }
+  for (const candidate of ENV_CANDIDATES) {
+    const p = path.join(process.cwd(), candidate);
+    if (fs.existsSync(p)) return p;
+  }
+  return null;
 }
 
 function readEnvFile(filePath: string): Record<string, string> {
@@ -32,7 +46,7 @@ function readEnvFile(filePath: string): Record<string, string> {
   return result;
 }
 
-export async function audit() {
+export async function audit(opts: { file?: string } = {}) {
   try {
     const auth = getConfig();
     if (!auth?.accessToken) {
@@ -48,13 +62,18 @@ export async function audit() {
       return;
     }
 
-    const envPath = path.join(process.cwd(), ".env");
-    if (!fs.existsSync(envPath)) {
-      console.log(chalk.red("No .env file found in this directory."));
-      console.log("Run: storemyapi pull  to fetch keys from the cloud.");
+    const envPath = resolveEnvFile(opts.file);
+    if (!envPath) {
+      if (opts.file) {
+        console.log(chalk.red(`File not found: ${opts.file}`));
+      } else {
+        console.log(chalk.red("No .env or .env.local file found in this directory."));
+        console.log("Run: storemyapi pull  to fetch keys from the cloud.");
+      }
       return;
     }
 
+    const envFile = path.basename(envPath);
     const headers = { Authorization: `Bearer ${auth.accessToken}` };
     const res = await api.get(`/projects/${local.projectId}/keys`, { headers });
     const cloudKeys: { key: string; value: string }[] = res.data?.keys ?? [];
@@ -72,7 +91,7 @@ export async function audit() {
 
     const allClean = !onlyInCloud.length && !onlyInLocal.length && !outOfSync.length;
 
-    console.log(`\nAudit: ${chalk.bold(local.projectName)}\n`);
+    console.log(`\nAudit: ${chalk.bold(local.projectName)} ${chalk.gray(`(${envFile})`)}\n`);
 
     if (allClean) {
       console.log(chalk.green("Everything is in sync."));
@@ -81,7 +100,7 @@ export async function audit() {
     }
 
     if (onlyInCloud.length) {
-      console.log(chalk.yellow(`In cloud, missing from .env (${onlyInCloud.length}):`));
+      console.log(chalk.yellow(`In cloud, missing from ${envFile} (${onlyInCloud.length}):`));
       for (const k of onlyInCloud) {
         console.log(`  ${chalk.bold(k.key)}`);
       }
@@ -90,7 +109,7 @@ export async function audit() {
     }
 
     if (onlyInLocal.length) {
-      console.log(chalk.yellow(`In .env, not in cloud (${onlyInLocal.length}):`));
+      console.log(chalk.yellow(`In ${envFile}, not in cloud (${onlyInLocal.length}):`));
       for (const k of onlyInLocal) {
         console.log(`  ${chalk.bold(k)}`);
       }
@@ -99,7 +118,7 @@ export async function audit() {
     }
 
     if (outOfSync.length) {
-      console.log(chalk.yellow(`Values differ between .env and cloud (${outOfSync.length}):`));
+      console.log(chalk.yellow(`Values differ between ${envFile} and cloud (${outOfSync.length}):`));
       for (const k of outOfSync) {
         console.log(`  ${chalk.bold(k.key)}`);
       }

@@ -47,12 +47,14 @@ program
     .action((nameOrId) => (0, link_1.link)(nameOrId));
 program
     .command("pull [key]")
-    .description("Pull keys from project into .env (all keys, or a specific one)")
-    .action((key) => (0, pull_1.pull)(key));
+    .description("Pull keys from project into .env.local (or .env). Use -f to specify a file.")
+    .option("-f, --file <file>", "Target env file (default: auto-detect .env.local or .env)")
+    .action((key, opts) => (0, pull_1.pull)(key, opts));
 program
     .command("push [key]")
-    .description("Push keys from .env to project (all keys, or a specific one)")
-    .action((key) => (0, push_1.push)(key));
+    .description("Push keys from .env.local (or .env) to project. Use -f to specify a file.")
+    .option("-f, --file <file>", "Source env file (default: auto-detect .env.local or .env)")
+    .action((key, opts) => (0, push_1.push)(key, opts));
 const key = program.command("key").description("Manage individual keys in the linked project");
 key
     .command("get <name>")
@@ -101,8 +103,9 @@ program
     .action(doctor_1.doctor);
 program
     .command("audit")
-    .description("Compare local .env with cloud keys and show what is out of sync")
-    .action(audit_1.audit);
+    .description("Compare local .env.local (or .env) with cloud keys and show what is out of sync")
+    .option("-f, --file <file>", "Env file to compare (default: auto-detect .env.local or .env)")
+    .action((opts) => (0, audit_1.audit)(opts));
 const env = program.command("env").description("Run commands with cloud keys injected as environment variables").enablePositionalOptions();
 env
     .command("run")

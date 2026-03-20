@@ -10,6 +10,7 @@ const chalk_1 = __importDefault(require("chalk"));
 const api_1 = require("../utils/api");
 const config_1 = require("../utils/config");
 const LOCAL_FILE = ".storemyapi.json";
+const ENV_CANDIDATES = [".env.local", ".env"];
 function localPath() {
     return path_1.default.join(process.cwd(), LOCAL_FILE);
 }
@@ -23,6 +24,18 @@ function getProjectId() {
     catch {
         return null;
     }
+}
+function resolveEnvFile(file) {
+    if (file) {
+        const p = path_1.default.resolve(process.cwd(), file);
+        return fs_1.default.existsSync(p) ? p : null;
+    }
+    for (const candidate of ENV_CANDIDATES) {
+        const p = path_1.default.join(process.cwd(), candidate);
+        if (fs_1.default.existsSync(p))
+            return p;
+    }
+    return null;
 }
 function readEnvFile(filePath) {
     if (!fs_1.default.existsSync(filePath))
@@ -42,7 +55,7 @@ function readEnvFile(filePath) {
     }
     return result;
 }
-async function push(keyName) {
+async function push(keyName, opts = {}) {
     try {
         const auth = (0, config_1.getConfig)();
         if (!auth?.accessToken) {
@@ -56,29 +69,35 @@ async function push(keyName) {
             console.log("Run: storemyapi init  or  storemyapi link");
             return;
         }
-        const envPath = path_1.default.join(process.cwd(), ".env");
-        if (!fs_1.default.existsSync(envPath)) {
-            console.log(chalk_1.default.red("No .env file found in this directory."));
+        const envPath = resolveEnvFile(opts.file);
+        if (!envPath) {
+            if (opts.file) {
+                console.log(chalk_1.default.red(`File not found: ${opts.file}`));
+            }
+            else {
+                console.log(chalk_1.default.red("No .env or .env.local file found in this directory."));
+            }
             return;
         }
+        const envFile = path_1.default.basename(envPath);
         const headers = { Authorization: `Bearer ${auth.accessToken}` };
         const allKeys = readEnvFile(envPath);
         if (!Object.keys(allKeys).length) {
-            console.log(chalk_1.default.yellow("No keys found in .env"));
+            console.log(chalk_1.default.yellow(`No keys found in ${envFile}`));
             return;
         }
         if (keyName) {
             if (!(keyName in allKeys)) {
-                console.log(chalk_1.default.red(`Key "${keyName}" not found in .env`));
+                console.log(chalk_1.default.red(`Key "${keyName}" not found in ${envFile}`));
                 return;
             }
             await api_1.api.post(`/projects/${projectId}/keys`, { key: keyName, value: allKeys[keyName] }, { headers });
-            console.log(chalk_1.default.green(`Pushed: ${keyName}`));
+            console.log(chalk_1.default.green(`Pushed: ${keyName}`) + chalk_1.default.gray(`  (from ${envFile})`));
             return;
         }
         const entries = Object.entries(allKeys);
         await api_1.api.post(`/projects/${projectId}/keys/bulk`, { keys: entries.map(([key, value]) => ({ key, value })) }, { headers });
-        console.log(chalk_1.default.green(`Pushed ${entries.length} key(s) to project`));
+        console.log(chalk_1.default.green(`Pushed ${entries.length} key(s) to project`) + chalk_1.default.gray(`  (from ${envFile})`));
     }
     catch (err) {
         const status = err?.response?.status;

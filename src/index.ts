@@ -55,13 +55,15 @@ program
 
 program
   .command("pull [key]")
-  .description("Pull keys from project into .env (all keys, or a specific one)")
-  .action((key) => pull(key));
+  .description("Pull keys from project into .env.local (or .env). Use -f to specify a file.")
+  .option("-f, --file <file>", "Target env file (default: auto-detect .env.local or .env)")
+  .action((key, opts) => pull(key, opts));
 
 program
   .command("push [key]")
-  .description("Push keys from .env to project (all keys, or a specific one)")
-  .action((key) => push(key));
+  .description("Push keys from .env.local (or .env) to project. Use -f to specify a file.")
+  .option("-f, --file <file>", "Source env file (default: auto-detect .env.local or .env)")
+  .action((key, opts) => push(key, opts));
 
 const key = program.command("key").description("Manage individual keys in the linked project");
 
@@ -124,8 +126,9 @@ program
 
 program
   .command("audit")
-  .description("Compare local .env with cloud keys and show what is out of sync")
-  .action(audit);
+  .description("Compare local .env.local (or .env) with cloud keys and show what is out of sync")
+  .option("-f, --file <file>", "Env file to compare (default: auto-detect .env.local or .env)")
+  .action((opts) => audit(opts));
 
 const env = program.command("env").description("Run commands with cloud keys injected as environment variables").enablePositionalOptions();
 
