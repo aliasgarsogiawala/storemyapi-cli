@@ -2,6 +2,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const commander_1 = require("commander");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version } = require("../package.json");
 const login_1 = require("./commands/login");
 const whoami_1 = require("./commands/whoami");
 const logout_1 = require("./commands/logout");
@@ -19,7 +21,7 @@ const program = new commander_1.Command();
 program
     .name("storemyapi")
     .description("Secure cloud-synced .env manager")
-    .version("1.0.3");
+    .version(version);
 program
     .command("login")
     .description("Authenticate with storemyapi")

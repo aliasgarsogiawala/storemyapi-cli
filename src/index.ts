@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import { Command } from "commander";
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version } = require("../package.json") as { version: string };
 import { login } from "./commands/login";
 import { whoami } from "./commands/whoami";
 import { logout } from "./commands/logout";
@@ -20,7 +22,7 @@ const program = new Command();
 program
   .name("storemyapi")
   .description("Secure cloud-synced .env manager")
-  .version("1.0.3");
+  .version(version);
 
 program
   .command("login")

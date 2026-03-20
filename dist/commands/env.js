@@ -42,7 +42,7 @@ async function envRun(args) {
             return;
         }
         const headers = { Authorization: `Bearer ${auth.accessToken}` };
-        const res = await api_1.api.get(`/projects/${projectId}/keys`, { headers });
+        const res = await api_1.api.get(`/cli/keys?projectId=${projectId}`, { headers });
         const keys = res.data?.keys ?? [];
         const injected = {};
         for (const k of keys) {

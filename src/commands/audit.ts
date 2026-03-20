@@ -75,7 +75,7 @@ export async function audit(opts: { file?: string } = {}) {
 
     const envFile = path.basename(envPath);
     const headers = { Authorization: `Bearer ${auth.accessToken}` };
-    const res = await api.get(`/projects/${local.projectId}/keys`, { headers });
+    const res = await api.get(`/cli/keys?projectId=${local.projectId}`, { headers });
     const cloudKeys: { key: string; value: string }[] = res.data?.keys ?? [];
 
     const cloudMap: Record<string, string> = {};
