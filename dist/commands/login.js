@@ -38,9 +38,8 @@ Waiting for confirmation...
                 return;
             }
             if (pollRes.data?.verified) {
-                const userId = pollRes.data.userId;
-                const tokenRes = await api_1.api.post("/cli/token", { userId });
-                const { token } = tokenRes.data;
+                const tokenRes = await api_1.api.post("/cli/token", { deviceCode });
+                const { token, userId } = tokenRes.data;
                 (0, config_1.saveConfig)({
                     accessToken: token,
                     userId,
