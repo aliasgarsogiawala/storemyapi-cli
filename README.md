@@ -139,6 +139,33 @@ Reports three things:
 - Keys in your local file that haven't been pushed to the cloud
 - Keys that exist on both sides but have different values
 
+### `vercel deploy` — [BETA]
+
+> **Note:** This command is still under active development and may not work as expected in all cases. Use with caution in production environments.
+
+Pushes your CLI-encrypted keys directly to a Vercel project as environment variables. Browser-encrypted keys cannot be deployed via the CLI — use the web dashboard for those.
+
+```bash
+storemyapi vercel deploy
+storemyapi vercel deploy --token <vercel-token> --project <project-id>
+storemyapi vercel deploy --token <vercel-token> --project <project-id> --team <team-id>
+storemyapi vercel deploy --target production
+storemyapi vercel deploy -k API_KEY -k STRIPE_SECRET_KEY
+```
+
+Options:
+
+| Flag | Description |
+|---|---|
+| `-t, --token` | Your Vercel API token |
+| `-p, --project` | Vercel project ID |
+| `--team` | Vercel team ID (optional, for team projects) |
+| `--target` | Environment target: `production`, `preview`, or `development` (default: `production`) |
+| `-k, --key` | Key name to deploy (repeatable). Omit to deploy all CLI-encrypted keys |
+| `-y, --yes` | Skip confirmation prompt |
+
+Your Vercel token is never stored — it is used only for the duration of the request.
+
 ## Files
 
 - `~/.storemyapi/config.json` — stores your auth token. Never commit this.

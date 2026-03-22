@@ -16,6 +16,7 @@ import { shareAdd, shareRemove, shareList, shareInvites, shareAccept, shareDecli
 import { doctor } from "./commands/doctor";
 import { audit } from "./commands/audit";
 import { envRun } from "./commands/env";
+import { vercelDeploy } from "./commands/vercel";
 
 const program = new Command();
 
@@ -141,5 +142,27 @@ env
   .passThroughOptions()
   .argument("[args...]")
   .action((args) => envRun(args));
+
+const vercel = program.command("vercel").description("Vercel integration (beta)");
+
+vercel
+  .command("deploy")
+  .description("Push storemyapi keys as environment variables to a Vercel project [BETA]")
+  .option("-t, --token <token>", "Vercel personal access token")
+  .option("-p, --project <project>", "Vercel project ID or name")
+  .option("--team <teamId>", "Vercel team ID (optional)")
+  .option("--target <target>", "Deployment target: production, preview, or development (default: production)")
+  .option("-k, --key <name>", "Deploy only this key (can be repeated)", (v, acc: string[]) => [...acc, v], [] as string[])
+  .option("-y, --yes", "Skip confirmation prompts")
+  .action((opts) =>
+    vercelDeploy({
+      token: opts.token,
+      project: opts.project,
+      team: opts.team,
+      target: opts.target,
+      keys: opts.key,
+      yes: opts.yes,
+    })
+  );
 
 program.parse();
