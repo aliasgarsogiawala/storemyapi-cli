@@ -26,16 +26,18 @@ function getProjectId() {
     }
 }
 function resolveEnvFile(file) {
-    if (file)
-        return path_1.default.resolve(process.cwd(), file);
+    if (file) {
+        const p = path_1.default.resolve(process.cwd(), file);
+        return fs_1.default.existsSync(p) ? p : null;
+    }
     // Auto-detect: prefer .env.local, fall back to .env
     for (const candidate of ENV_CANDIDATES) {
         const p = path_1.default.join(process.cwd(), candidate);
         if (fs_1.default.existsSync(p))
             return p;
     }
-    // Default to .env (will be created if it doesn't exist)
-    return path_1.default.join(process.cwd(), ".env");
+    // No existing file found
+    return null;
 }
 function readEnvFile(filePath) {
     if (!fs_1.default.existsSync(filePath))
@@ -79,6 +81,15 @@ async function pull(keyName, opts = {}) {
             return;
         }
         const envPath = resolveEnvFile(opts.file);
+        if (!envPath) {
+            if (opts.file) {
+                console.log(chalk_1.default.red(`File not found: ${opts.file}`));
+            }
+            else {
+                console.log(chalk_1.default.red("No .env or .env.local file found in this directory."));
+            }
+            return;
+        }
         const envFile = path_1.default.basename(envPath);
         const headers = { Authorization: `Bearer ${auth.accessToken}` };
         if (keyName) {

@@ -22,15 +22,18 @@ function getProjectId(): string | null {
   }
 }
 
-function resolveEnvFile(file?: string): string {
-  if (file) return path.resolve(process.cwd(), file);
+function resolveEnvFile(file?: string): string | null {
+  if (file) {
+    const p = path.resolve(process.cwd(), file);
+    return fs.existsSync(p) ? p : null;
+  }
   // Auto-detect: prefer .env.local, fall back to .env
   for (const candidate of ENV_CANDIDATES) {
     const p = path.join(process.cwd(), candidate);
     if (fs.existsSync(p)) return p;
   }
-  // Default to .env (will be created if it doesn't exist)
-  return path.join(process.cwd(), ".env");
+  // No existing file found
+  return null;
 }
 
 function readEnvFile(filePath: string): Record<string, string> {
@@ -77,6 +80,15 @@ export async function pull(keyName?: string, opts: { file?: string } = {}) {
     }
 
     const envPath = resolveEnvFile(opts.file);
+    if (!envPath) {
+      if (opts.file) {
+        console.log(chalk.red(`File not found: ${opts.file}`));
+      } else {
+        console.log(chalk.red("No .env or .env.local file found in this directory."));
+      }
+      return;
+    }
+
     const envFile = path.basename(envPath);
     const headers = { Authorization: `Bearer ${auth.accessToken}` };
 
